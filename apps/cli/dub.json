@@ -1,0 +1,8 @@
+{
+	"name": "site-archiver-cli",
+	"description": "CLI tool for site archiving",
+	"dependencies": {
+		"site-archiver-lib": {"path": "../../libs/archiver"}
+	},
+	"targetType": "executable"
+}

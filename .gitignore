@@ -1,0 +1,27 @@
+# D
+bin/
+obj/
+*.exe
+*.dll
+*.lib
+*.exp
+*.pdb
+.dub/
+dub.selections.json
+
+# Node
+node_modules/
+dist/
+.pnpm-debug.log
+
+# Antora
+build/
+.cache/
+
+# IDE
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db

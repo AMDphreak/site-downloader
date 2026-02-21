@@ -1,0 +1,18 @@
+site:
+  title: Site Archiver
+  url: https://amdphreak.github.io/site-archiver/
+  start_page: site-archiver::index.adoc
+content:
+  sources:
+    - url: .
+      branches: HEAD
+      start_path: .
+ui:
+  bundle:
+    url: ./node_modules/antora-dark-theme/dist/ui-bundle.zip
+    snapshot: true
+output:
+  dir: ./build/site
+antora:
+  extensions:
+    - '@antora/collector-extension'

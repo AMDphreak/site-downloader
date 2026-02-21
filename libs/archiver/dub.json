@@ -1,0 +1,9 @@
+{
+	"name": "site-archiver-lib",
+	"description": "Core logic for site archiving",
+	"dependencies": {
+		"requests": "~>2.1.0",
+		"arsd-official:dom": "~>11.0.0"
+	},
+	"targetType": "library"
+}

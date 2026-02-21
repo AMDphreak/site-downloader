@@ -1,0 +1,9 @@
+{
+	"name": "site-archiver-gui",
+	"description": "GUI for site archiving",
+	"dependencies": {
+		"site-archiver-lib": {"path": "../../libs/archiver"},
+		"webview": "~>0.5.0"
+	},
+	"targetType": "executable"
+}

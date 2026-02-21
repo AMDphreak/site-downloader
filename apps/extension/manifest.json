@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Site Archiver Extension",
+  "version": "1.0",
+  "description": "Download sites to a static offline version",
+  "permissions": ["activeTab", "scripting", "downloads", "nativeMessaging"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

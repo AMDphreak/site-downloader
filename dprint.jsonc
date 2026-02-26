@@ -10,10 +10,10 @@
   "exec": {
     "commands": [
       {
-        "command": "dub format",
-        "exts": ["d"]
-      }
-    ]
+        "command": "dub run dfmt -q --",
+        "exts": ["d"],
+      },
+    ],
   },
   "includes": ["**/*.{ts,tsx,js,jsx,json,jsonc,md,dockerfile,d}"],
   "excludes": [
@@ -21,13 +21,13 @@
     "**/*-lock.json",
     "bin/",
     "obj/",
-    ".dub/"
+    ".dub/",
   ],
   "plugins": [
     "https://plugins.dprint.dev/typescript-0.93.0.wasm",
     "https://plugins.dprint.dev/json-0.19.3.wasm",
     "https://plugins.dprint.dev/markdown-0.17.1.wasm",
     "https://plugins.dprint.dev/dockerfile-0.3.2.wasm",
-    "https://plugins.dprint.dev/exec-0.5.0.json@876ca9a05f0612bb09c9162624e5fae6c64532b26090c29f27dcc76e36d40c06"
-  ]
+    "https://plugins.dprint.dev/exec-0.5.0.json",
+  ],
 }

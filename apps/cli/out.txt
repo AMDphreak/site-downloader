@@ -1,0 +1,15 @@
+    Starting Performing "debug" build using C:\D\dmd2\windows\bin64\dmd.exe for x86_64.
+  Up-to-date arsd-official:core 12.1.0: target for configuration [library] is up to date.
+  Up-to-date arsd-official:characterencodings 12.1.0: target for configuration [library] is up to date.
+  Up-to-date arsd-official:dom 12.1.0: target for configuration [library] is up to date.
+  Up-to-date automem 0.6.11: target for configuration [library] is up to date.
+  Up-to-date cachetools 0.4.2: target for configuration [library] is up to date.
+  Up-to-date requests 2.2.0: target for configuration [std] is up to date.
+  Up-to-date site-archiver-lib ~master: target for configuration [library] is up to date.
+  Up-to-date site-archiver-cli ~master: target for configuration [application] is up to date.
+    Finished To force a rebuild of up-to-date targets, run again with --force
+     Running site-archiver-cli.exe 
+<!DOCTYPE html>
+<html><body><style>p &gt; a { content: &quot;test&quot;; url('foo.png'); }</style></body></html>
+<!DOCTYPE html>
+<html><body><style>p &gt; a { content: &quot;test&quot;; url('foo.png'); }</style></body></html>

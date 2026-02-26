@@ -1,0 +1,227 @@
+diff --git a/libs/archiver/source/archiver/package.d b/libs/archiver/source/archiver/package.d
+index eadd281..69ab6d1 100644
+--- a/libs/archiver/source/archiver/package.d
++++ b/libs/archiver/source/archiver/package.d
+@@ -10,7 +10,7 @@ import std.net.curl;
+ import std.conv;
+ import std.typecons;
+ import std.string;
+-
++import std.regex;
+ import requests;
+ import arsd.dom;
+ 
+@@ -113,11 +113,34 @@ class SiteArchiver {
+                             }
+                         }
+                     }
++
++                    // Process inline styles
++                    foreach(element; document.querySelectorAll("[style]")) {
++                        string style = element.getAttribute("style");
++                        element.setAttribute("style", processCssUrls(style, finalUrl, localPath));
++                    }
++
++                    // Process style tags
++            foreach(element; document.querySelectorAll("style")) {
++                string css = element.textContent;
++                if (!css.empty) {
++                    element.textContent = processCssUrls(css, finalUrl, localPath);
++                }
++            }
++
+                     std.file.write(fullPath, document.toString());
+                     return;
+                 }
+             }
+             
++            bool isCss = contentType.canFind("text/css") || finalUrl.toLower().canFind(".css");
++            if (isCss) {
++                string css = cast(string)rs.responseBody.data.idup;
++                css = processCssUrls(css, finalUrl, localPath);
++                std.file.write(fullPath, css);
++                return;
++            }
++
+             // Non-HTML content
+             std.file.write(fullPath, rs.responseBody.data);
+             
+@@ -127,8 +150,60 @@ class SiteArchiver {
+     }
+ 
+     private void downloadAsset(string url) {
++        if (url.empty || url.startsWith("mailto:") || url.startsWith("tel:") || url.startsWith("javascript:")) return;
+         if (url in visitedUrls) return;
+-        crawl(url, 999, 0); 
++        visitedUrls[url] = true;
++
++        string localPath = urlToLocalPath(url);
++        string fullPath = buildPath(outputDir, localPath);
++
++        // For assets like images and fonts, just download them
++        bool isAsset = url.toLower().canFind(".jpg") || url.toLower().canFind(".jpeg") || 
++                       url.toLower().canFind(".png") || url.toLower().canFind(".gif") || 
++                       url.toLower().canFind(".woff") || url.toLower().canFind(".ttf") || 
++                       url.toLower().canFind(".eot") || url.toLower().canFind(".svg") ||
++                       url.toLower().canFind(".js");
++
++        if (isAsset) {
++            mkdirRecurse(dirName(fullPath));
++            try {
++                writeln("Archiving Asset: ", url);
++                auto client = HTTP();
++                // client.handle.set(CurlOption.followlocation, 1); // Redirects are actually handled by the low-level curl if set correctly, but std.net.curl.download might not support it easily
++                client.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
++                std.net.curl.download(url.startsWith("//") ? "https:" ~ url : url, fullPath, client);
++            } catch (Exception e) {
++                writeln("Failed to download asset ", url, ": ", e.msg);
++            }
++        } else {
++            // Probably HTML or CSS, use crawl to process it
++            crawl(url, 999, 0); 
++        }
++    }
++
++    private string processCssUrls(string css, string baseUrl, string localPath) {
++        writeln("Processing CSS (", css.length, " bytes) from ", baseUrl);
++        // Handle url(...) with any quotes or no quotes, and handle html entities
++        // Matches url( ... ) with optional quotes or entities
++        auto r = regex(`url\(\s*(['"]?|&quot;|&#39;)?([^'"\)]*)\1\s*\)`);
++        int matchCount = 0;
++        string result = replaceAll!((m) {
++            matchCount++;
++            string targetUrl = std.string.strip(m[2]);
++            if (targetUrl.empty || targetUrl.startsWith("data:")) return m.hit;
++            
++            string absoluteTarget = resolveUrl(baseUrl, targetUrl);
++            if (shouldDownload(absoluteTarget, false)) {
++                downloadAsset(absoluteTarget);
++                string localTarget = urlToLocalPath(absoluteTarget);
++                string relPath = getRelativePath(localPath, localTarget);
++                writeln("Rewriting CSS URL: ", targetUrl, " -> ", relPath, " (in ", localPath, ")");
++                return "url('" ~ relPath ~ "')";
++            }
++            return m.hit;
++        })(css, r);
++        writeln("Finished processing CSS from ", baseUrl, ": found ", matchCount, " url() references.");
++        return result;
+     }
+ 
+     private string resolveUrl(string base, string relative) {
+@@ -138,30 +213,58 @@ class SiteArchiver {
+         auto u = URI(base);
+         if (relative.startsWith("//")) return u.scheme ~ ":" ~ relative;
+         if (relative.startsWith("/")) {
++            // Strip query string from base path for resolution
++            string basePath = u.path;
++            auto qIdx = basePath.indexOf('?');
++            if (qIdx != -1) basePath = basePath[0..qIdx];
+             return u.scheme ~ "://" ~ u.host ~ relative;
+         }
+         
+         string basePath = u.path;
++        // Strip query string from base path for resolution
++        auto qIdx = basePath.indexOf('?');
++        if (qIdx != -1) basePath = basePath[0..qIdx];
++
+         if (!basePath.endsWith("/")) {
+             auto lastSlash = basePath.lastIndexOf("/");
+             if (lastSlash != -1) basePath = basePath[0..lastSlash+1];
+             else basePath = "/";
+         }
+         
+-        return u.scheme ~ "://" ~ u.host ~ basePath ~ relative;
++        // Manual normalization of path
++        import std.array : split, join;
++        import std.algorithm.iteration : filter;
++        string combined = basePath ~ relative;
++        auto parts = combined.split("/");
++        string[] clean;
++        foreach (p; parts) {
++            if (p == "." || (p.empty && clean.length > 0)) continue;
++            if (p == "..") {
++                if (clean.length > 0 && clean[$-1] != "..") clean = clean[0..$-1];
++                else clean ~= "..";
++            } else {
++                clean ~= p;
++            }
++        }
++        string norm = clean.join("/");
++        if (!norm.startsWith("/")) norm = "/" ~ norm;
++        
++        return u.scheme ~ "://" ~ u.host ~ norm;
+     }
+ 
+     private bool shouldDownload(string url, bool isLink) {
+-        auto u = URI(url);
+-        string targetDomain = getApexDomain(u.host);
+-        
+-        // Always follow links to the same domain
+-        if (isLink) {
+-            return targetDomain == this.domain || targetDomain.endsWith("." ~ this.domain);
++        try {
++            auto u = URI(url);
++            string targetDomain = getApexDomain(u.host);
++            
++            if (isLink) {
++                return targetDomain == this.domain;
++            }
++            
++            return true; // Always download assets
++        } catch (Exception) {
++            return false;
+         }
+-        
+-        // Always download assets (images/js/css) regardless of domain
+-        return true; 
+     }
+ 
+     private string urlToLocalPath(string url) {
+@@ -169,19 +272,20 @@ class SiteArchiver {
+         string hostname = u.host;
+         string path = u.path;
+         
+-        import std.algorithm.searching : countUntil;
+-        auto hashIdx = path.countUntil("#");
+-        if (hashIdx != -1) path = path[0..hashIdx];
++        // Strip query and fragment for the filename
++        foreach (sep; ['?', '#']) {
++            auto idx = path.indexOf(sep);
++            if (idx != -1) path = path[0..idx];
++        }
+         
+         if (path.startsWith("/")) path = path[1..$];
+         if (path.empty) path = "index.html";
+         else if (path.endsWith("/")) path ~= "index.html";
+         
+-        // Sanitize
++        // Sanitize for Windows
+         import std.string : tr;
+         path = path.tr(`<>:"|?*#`, `________`);
+         
+-        // Force extensions for common types if missing
+         if (!path.canFind(".")) path ~= ".html";
+ 
+         if (getApexDomain(hostname) == this.domain) return path;
+@@ -190,12 +294,17 @@ class SiteArchiver {
+ 
+     private string getRelativePath(string from, string to) {
+         try {
+-            auto fromDir = dirName(from);
+-            string rel = to;
+-            if (fromDir != ".") rel = relativePath(to, fromDir);
++            import std.path : relativePath, dirName, buildNormalizedPath, absolutePath;
++            // Use absolute paths to ensure relativePath works correctly on Windows
++            auto absFrom = absolutePath(buildNormalizedPath(from));
++            auto absTo = absolutePath(buildNormalizedPath(to));
++            auto fromDir = dirName(absFrom);
++            
++            string rel = relativePath(absTo, fromDir);
+             return rel.replace("\\", "/");
+         } catch (Exception e) {
+-            return to.replace("\\", "/");
++            writeln("Relative path error: ", e.msg);
++            return to;
+         }
+     }
+ }

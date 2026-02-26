@@ -1,0 +1,42 @@
+
+core.exception.AssertError@C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(8926): Assertion failure
+----------------
+0x00007FF7B5947D57 in d_throwc
+0x00007FF7B5949278 in d_assertp
+0x00007FF7B57BDC4B in arsd.dom.Utf8Stream.opSlice at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(8926)
+0x00007FF7B57B969F in arsd.dom.Document.parseStream.readElement at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1378)
+0x00007FF7B57BAB8E in arsd.dom.Document.parseStream.readElement.addTag at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1215)
+0x00007FF7B57B9293 in arsd.dom.Document.parseStream.readElement at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1336)
+0x00007FF7B57BAB8E in arsd.dom.Document.parseStream.readElement.addTag at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1215)
+0x00007FF7B57B910D in arsd.dom.Document.parseStream.readElement at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1316)
+0x00007FF7B57BAB8E in arsd.dom.Document.parseStream.readElement.addTag at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1215)
+0x00007FF7B57B910D in arsd.dom.Document.parseStream.readElement at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1316)
+0x00007FF7B57BAB8E in arsd.dom.Document.parseStream.readElement.addTag at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1215)
+0x00007FF7B57B910D in arsd.dom.Document.parseStream.readElement at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1316)
+0x00007FF7B57BAB8E in arsd.dom.Document.parseStream.readElement.addTag at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1215)
+0x00007FF7B57B9293 in arsd.dom.Document.parseStream.readElement at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1336)
+0x00007FF7B57B5999 in arsd.dom.Document.parseStream at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(1395)
+0x00007FF7B57B5806 in arsd.dom.Document.parseUtf8 at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(473)
+0x00007FF7B57B5469 in arsd.dom.Document.this at C:\Users\rjamd\AppData\Local\dub\packages\arsd-official\12.1.0\arsd-official\dom.d(332)
+0x00007FF7B57883EC in archiver.SiteArchiver.crawl at Z:\code\github.com\AMDphreak\site-archiver\libs\archiver\source\archiver\package.d(72)
+0x00007FF7B5788E41 in archiver.SiteArchiver.downloadAsset at Z:\code\github.com\AMDphreak\site-archiver\libs\archiver\source\archiver\package.d(122)
+0x00007FF7B5788BE3 in archiver.SiteArchiver.crawl.__foreachbody_L81_C17 at Z:\code\github.com\AMDphreak\site-archiver\libs\archiver\source\archiver\package.d(99)
+0x00007FF7B5791844 in int core.internal.newaa._d_aaApply2!(immutable(char)[], immutable(char[]), int delegate(ref immutable(char)[], ref immutable(char[])))._d_aaApply2(inout(immutable(char[])[immutable(char)[]]), int delegate(ref immutable(char)[], ref immutable(char[]))) at C:\D\dmd2\windows\bin64\..\..\src\druntime\import\core\internal\newaa.d(781)
+0x00007FF7B578B844 in int core.internal.newaa._d_aaApply2!(immutable(char)[], immutable(char[]), int delegate(ref immutable(char)[], ref immutable(char[])))._d_aaApply2(immutable(char[][immutable(char)[]]), int delegate(ref immutable(char)[], ref immutable(char[]))) at C:\D\dmd2\windows\bin64\..\..\src\druntime\import\core\internal\newaa.d(799)
+0x00007FF7B5788427 in archiver.SiteArchiver.crawl at Z:\code\github.com\AMDphreak\site-archiver\libs\archiver\source\archiver\package.d(81)
+0x00007FF7B5787B2A in archiver.SiteArchiver.archive at Z:\code\github.com\AMDphreak\site-archiver\libs\archiver\source\archiver\package.d(39)
+0x00007FF7B5755B08 in D main at Z:\code\github.com\AMDphreak\site-archiver\apps\cli\source\app.d(37)
+0x00007FF7B597B7A3 in void rt.dmain2._d_run_main2(char[][], ulong, extern (C) int function(char[][])*).runAll().__lambda_L524_C29()
+0x00007FF7B597B59F in void rt.dmain2._d_run_main2(char[][], ulong, extern (C) int function(char[][])*).tryExec(scope void delegate())
+0x00007FF7B597B6BF in void rt.dmain2._d_run_main2(char[][], ulong, extern (C) int function(char[][])*).runAll()
+0x00007FF7B597B59F in void rt.dmain2._d_run_main2(char[][], ulong, extern (C) int function(char[][])*).tryExec(scope void delegate())
+0x00007FF7B597B3AA in d_run_main2
+0x00007FF7B594C919 in d_run_main
+0x00007FF7B576AF12 in app._d_cmain!().main at C:\D\dmd2\windows\bin64\..\..\src\druntime\import\core\internal\entrypoint.d(29)
+0x00007FF7B5A6F008 in __scrt_common_main_seh at D:\a\_work\1\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl(288)
+0x00007FFC9ED7E8D7 in BaseThreadInitThunk
+0x00007FFC9FBEC40C in RtlUserThreadStart
+Starting archive of https://www.germantownsymphony.org
+Archiving: https://www.germantownsymphony.org
+Archiving: https://www.germantownsymphony.org/files/templateArtifacts.js?1771616380
+Archiving: https://cdn11.editmysite.com/js/jquery-1.8.3.min.js

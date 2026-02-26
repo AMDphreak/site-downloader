@@ -1,0 +1,7 @@
+     Warning 
+     Warning 
+     Warning 
+     Warning 
+     Warning 
+     Warning Using `package.json` is deprecated as it may conflict with other package managers
+     Warning Rename 'package.json' to 'dub.json'. Loading dependencies using 'package.json' will still work.

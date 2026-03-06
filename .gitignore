@@ -22,6 +22,22 @@ build/
 .vscode/
 *.code-workspace
 
+# Test/scratch outputs and archives
+log_*.txt
+*_log.txt
+diff*.txt
+err.txt
+out.txt
+live_*.txt
+**/build*.txt
+*_raw.html
+**/test_archive*/
+
+# Backup/scratch (keep one-off scripts out of repo)
+old_*.d
+*.bak
+*.orig
+
 # OS
 .DS_Store
 Thumbs.db

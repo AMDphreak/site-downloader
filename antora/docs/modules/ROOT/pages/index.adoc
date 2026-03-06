@@ -1,0 +1,20 @@
+= Site Downloader
+:description: Recursive site downloader and archiver.
+
+Welcome to the Site Downloader documentation.
+
+== Features
+* Recursive downloading.
+* Link rewriting for offline use.
+* Chromium session extraction.
+* CLI and GUI interfaces.
+* Chrome Extension integration via WASM.
+
+== Getting Started
+Install the dependencies and run the CLI:
+
+[source,powershell]
+----
+cd apps/cli
+dub run
+----

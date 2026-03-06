@@ -1,0 +1,6 @@
+name: site-downloader
+title: Site Downloader
+version: 1.0
+start_page: index.adoc
+nav:
+  - modules/ROOT/nav.adoc

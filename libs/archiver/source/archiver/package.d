@@ -35,11 +35,13 @@ class SiteArchiver
     string outputDir;
     string domain;
     bool[string] visitedUrls;
+    bool downloadSocial = false;
 
-    this(string rootUrl, string outputDir)
+    this(string rootUrl, string outputDir, bool downloadSocial = false)
     {
         this.rootUrl = rootUrl;
         this.outputDir = outputDir;
+        this.downloadSocial = downloadSocial;
         auto u = URI(rootUrl);
         this.domain = getApexDomain(u.host);
     }
@@ -49,8 +51,6 @@ class SiteArchiver
         auto parts = host.split(".");
         if (parts.length >= 2)
         {
-            // Very simple apex extraction: "www.google.com" -> "google.com"
-            // "sub.google.co.uk" -> "google.co.uk" (heuristic)
             if (parts.length > 2 && parts[0] == "www")
                 return parts[1 .. $].join(".");
             return host;
@@ -60,6 +60,17 @@ class SiteArchiver
 
     void archive(int maxDepth = 3)
     {
+        // Explicitly try to download favicon.ico from the root
+        try
+        {
+            auto u = URI(rootUrl);
+            string favUrl = u.scheme ~ "://" ~ u.host ~ "/favicon.ico";
+            downloadAsset(favUrl);
+        }
+        catch (Exception)
+        {
+        }
+
         crawl(rootUrl, 0, maxDepth);
     }
 
@@ -79,7 +90,6 @@ class SiteArchiver
             auto req = Request();
             req.verbosity = 0;
             req.sslSetVerifyPeer(false);
-            // Set User-Agent to avoid blocks from CDNs
             req.addHeaders([
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
             ]);
@@ -94,7 +104,6 @@ class SiteArchiver
             string fullPath = buildPath(outputDir, localPath);
             mkdirRecurse(dirName(fullPath));
 
-            // Skip problematic media technology (HLS/DASH)
             if (contentType.canFind("application/vnd.apple.mpegurl")
                     || contentType.canFind("application/dash+xml")
                     || finalUrl.canFind(".m3u8") || finalUrl.canFind(".mpd"))
@@ -105,7 +114,6 @@ class SiteArchiver
 
             if (contentType.canFind("text/html") || contentType.empty)
             {
-                // Heuristic: check if body looks like HTML if no content-type
                 string html = cast(string) rs.responseBody.data.idup;
                 if (std.string.strip(html).startsWith("<") || contentType.canFind("text/html"))
                 {
@@ -136,9 +144,14 @@ class SiteArchiver
                                     downloadAsset(absoluteTarget);
                                 }
 
-                                string localTarget = urlToLocalPath(absoluteTarget, "");
+                                string localTarget = urlToLocalPath(absoluteTarget,
+                                        isLink ? "" : "application/octet-stream");
                                 element.setAttribute(tag.attr,
                                         getRelativePath(localPath, localTarget));
+                            }
+                            else if (targetUrl.startsWith("//"))
+                            {
+                                element.setAttribute(tag.attr, "https:" ~ targetUrl);
                             }
                         }
                     }
@@ -161,7 +174,6 @@ class SiteArchiver
                         string css = element.innerText;
                         if (css.empty)
                             css = element.innerHTML;
-
                         if (!css.empty)
                         {
                             string revised = processCssUrls(css, finalUrl, localPath);
@@ -170,7 +182,7 @@ class SiteArchiver
                         }
                     }
 
-                    // Process script tags to fix protocol-relative URLs (//)
+                    // Process script tags
                     foreach (element; document.querySelectorAll("script"))
                     {
                         string js = element.innerText;
@@ -178,8 +190,6 @@ class SiteArchiver
                             js = element.innerHTML;
                         if (!js.empty)
                         {
-                            // Fix common Weebly protocol-relative URLs
-                            // Use string replacement for common CDN patterns
                             string revised = js.replace("'//cdn", "'https://cdn")
                                 .replace("\"//cdn", "\"https://cdn")
                                 .replace("'//www.weebly.com", "'https://www.weebly.com")
@@ -189,34 +199,80 @@ class SiteArchiver
                                 .replace("\"//marketplace.editmysite.com",
                                         "\"https://marketplace.editmysite.com");
 
-                            // Weebly Slideshow Support: Find images in JSON blocks
-                            if (js.canFind("wSlideshow.render"))
+                            if (revised.canFind("wSlideshow.render"))
                             {
-                                // Regex to find "url":"..." in the JSON images array
                                 auto imgRegex = regex(`"url":"([^"]+)"`);
-                                foreach (m; js.matchAll(imgRegex))
-                                {
+                                revised = replaceAll!((m) {
                                     string imgRel = m[1];
-                                    // Weebly images in slideshows are relative to /uploads/
                                     string imgFull = resolveUrl(finalUrl, "/uploads/" ~ imgRel);
                                     downloadAsset(imgFull);
 
-                                    // Also try the _orig version which Weebly often uses for higher quality
-                                    if (imgFull.endsWith(".jpg") || imgFull.endsWith(".png"))
+                                    if (imgFull.endsWith(".jpg")
+                                        || imgFull.endsWith(".png") || imgFull.endsWith(".jpeg"))
                                     {
                                         auto dotIdx = imgFull.lastIndexOf(".");
-                                        string imgOrig = imgFull[0 .. dotIdx]
-                                            ~ "_orig" ~ imgFull[dotIdx .. $];
-                                        downloadAsset(imgOrig);
+                                        if (dotIdx > 0)
+                                        {
+                                            string imgOrig = imgFull[0 .. dotIdx]
+                                                ~ "_orig" ~ imgFull[dotIdx .. $];
+                                            downloadAsset(imgOrig);
+                                        }
                                     }
-                                }
+
+                                    string localTarget = urlToLocalPath(imgFull, "image/jpeg");
+                                    string relPath = getRelativePath(localPath, localTarget);
+                                    return `"url":"` ~ relPath ~ `"`;
+                                })(revised, imgRegex);
                             }
 
+                            // CRITICAL: Fix absolute paths in JS that prepends /
+                            revised = revised.replace("\"/uploads/\"", "\"uploads/\"").replace("'/uploads/'",
+                                    "'uploads/'").replace(":/uploads/", ":uploads/");
+
                             if (revised != js)
-                            {
-                                // IMPORTANT: Use innerText/textContent for scripts to avoid arsd.dom 
-                                // parsing JS string contents as HTML nodes (which mangles the DOM)
                                 element.innerText = revised;
+                        }
+                    }
+
+                    // Favicon Fix
+                    auto head = document.querySelector("head");
+                    if (head)
+                    {
+                        Element existingFav;
+                        foreach (link; head.querySelectorAll("link[rel*='icon']"))
+                        {
+                            existingFav = link;
+                            break;
+                        }
+                        string favLocal = urlToLocalPath(resolveUrl(rootUrl, "/favicon.ico"), "");
+                        string relFavPath = getRelativePath(localPath, favLocal);
+                        if (existingFav)
+                        {
+                            existingFav.setAttribute("href", relFavPath);
+                        }
+                        else
+                        {
+                            auto favLink = document.createElement("link");
+                            favLink.setAttribute("rel", "shortcut icon");
+                            favLink.setAttribute("href", relFavPath);
+                            head.appendChild(favLink);
+                        }
+                    }
+
+                    // Global protocol fixer
+                    foreach (tag; [
+                        "img", "script", "link", "a", "iframe", "video", "audio",
+                        "source"
+                    ])
+                    {
+                        foreach (el; document.querySelectorAll(tag))
+                        {
+                            string attr = (tag == "a" || tag == "link") ? "href" : "src";
+                            if (el.hasAttribute(attr))
+                            {
+                                string val = el.getAttribute(attr);
+                                if (val.startsWith("//"))
+                                    el.setAttribute(attr, "https:" ~ val);
                             }
                         }
                     }
@@ -226,8 +282,7 @@ class SiteArchiver
                 }
             }
 
-            bool isCss = contentType.canFind("text/css") || finalUrl.toLower().canFind(".css");
-            if (isCss)
+            if (contentType.canFind("text/css") || finalUrl.toLower().canFind(".css"))
             {
                 string css = cast(string) rs.responseBody.data.idup;
                 css = processCssUrls(css, finalUrl, localPath);
@@ -235,9 +290,18 @@ class SiteArchiver
                 return;
             }
 
-            // Non-HTML content
-            std.file.write(fullPath, rs.responseBody.data);
+            if (contentType.canFind("javascript") || finalUrl.toLower()
+                    .canFind(".js") || finalUrl.toLower().canFind(".mjs"))
+            {
+                string js = cast(string) rs.responseBody.data.idup;
+                string revised = js.replace("\"//", "\"https://").replace("'//", "'https://").replace("\"/uploads/\"+",
+                        "\"\"+").replace("'/uploads/'+", "''+").replace("\"/uploads/\"",
+                        "\"\"").replace("'/uploads/'", "''");
+                std.file.write(fullPath, revised);
+                return;
+            }
 
+            std.file.write(fullPath, rs.responseBody.data);
         }
         catch (Exception e)
         {
@@ -256,12 +320,16 @@ class SiteArchiver
         string localPath = urlToLocalPath(url, "");
         string fullPath = buildPath(outputDir, localPath);
 
-        // For assets like images and fonts, just download them
         bool isAsset = url.toLower().canFind(".jpg") || url.toLower()
             .canFind(".jpeg") || url.toLower().canFind(".png") || url.toLower()
-            .canFind(".gif") || url.toLower().canFind(".woff") || url.toLower()
-            .canFind(".woff2") || url.toLower().canFind(".ttf") || url.toLower()
-            .canFind(".eot") || url.toLower().canFind(".svg") || url.toLower().canFind(".js");
+            .canFind(".gif") || url.toLower().canFind(".webp") || url.toLower()
+            .canFind(".ico") || url.toLower().canFind(".cur") || url.toLower()
+            .canFind(".woff") || url.toLower().canFind(".woff2") || url.toLower()
+            .canFind(".ttf") || url.toLower().canFind(".eot") || url.toLower()
+            .canFind(".svg") || url.toLower().canFind(".js") || url.toLower()
+            .canFind(".mjs") || url.toLower().canFind(".mp4") || url.toLower()
+            .canFind(".webm") || url.toLower().canFind(".pdf") || url.toLower()
+            .canFind("favicon") || url.toLower().canFind("apple-touch-icon");
 
         if (isAsset)
         {
@@ -282,38 +350,27 @@ class SiteArchiver
         }
         else
         {
-            // Probably HTML or CSS, use crawl to process it
             crawl(url, 999, 0);
         }
     }
 
     private string processCssUrls(string css, string baseUrl, string localPath)
     {
-        writeln("Processing CSS (", css.length, " bytes) from ", baseUrl);
-        // Handle url(...) with any quotes or no quotes, and handle html entities
-        // Matches url( ... ) with optional quotes or entities
         auto r = regex(`url\(\s*(['"]?|&quot;|&#39;)?([^'"\)]*)\1\s*\)`);
-        int matchCount = 0;
-        string result = replaceAll!((m) {
-            matchCount++;
+        return replaceAll!((m) {
             string targetUrl = std.string.strip(m[2]);
             if (targetUrl.empty || targetUrl.startsWith("data:"))
                 return m.hit;
-
             string absoluteTarget = resolveUrl(baseUrl, targetUrl);
             if (shouldDownload(absoluteTarget, false))
             {
                 downloadAsset(absoluteTarget);
-                string localTarget = urlToLocalPath(absoluteTarget, "");
+                string localTarget = urlToLocalPath(absoluteTarget, "application/octet-stream");
                 string relPath = getRelativePath(localPath, localTarget);
-                // writeln("Rewriting CSS URL: ", targetUrl, " -> ", relPath, " (in ", localPath, ")");
                 return "url('" ~ relPath ~ "')";
             }
             return m.hit;
         })(css, r);
-        writeln("Finished processing CSS from ", baseUrl, ": found ",
-                matchCount, " url() references.");
-        return result;
     }
 
     private string resolveUrl(string base, string relative)
@@ -322,25 +379,17 @@ class SiteArchiver
             return base;
         if (relative.startsWith("http"))
             return relative;
-
         auto u = URI(base);
         if (relative.startsWith("//"))
             return u.scheme ~ ":" ~ relative;
-        if (relative.startsWith("/"))
-        {
-            // Strip query string from base path for resolution
-            string basePath = u.path;
-            auto qIdx = basePath.indexOf('?');
-            if (qIdx != -1)
-                basePath = basePath[0 .. qIdx];
-            return u.scheme ~ "://" ~ u.host ~ relative;
-        }
 
         string basePath = u.path;
-        // Strip query string from base path for resolution
         auto qIdx = basePath.indexOf('?');
         if (qIdx != -1)
             basePath = basePath[0 .. qIdx];
+
+        if (relative.startsWith("/"))
+            return u.scheme ~ "://" ~ u.host ~ relative;
 
         if (!basePath.endsWith("/"))
         {
@@ -350,10 +399,6 @@ class SiteArchiver
             else
                 basePath = "/";
         }
-
-        // Manual normalization of path
-        import std.array : split, join;
-        import std.algorithm.iteration : filter;
 
         string combined = basePath ~ relative;
         auto parts = combined.split("/");
@@ -370,14 +415,11 @@ class SiteArchiver
                     clean ~= "..";
             }
             else
-            {
                 clean ~= p;
-            }
         }
         string norm = clean.join("/");
         if (!norm.startsWith("/"))
             norm = "/" ~ norm;
-
         return u.scheme ~ "://" ~ u.host ~ norm;
     }
 
@@ -386,14 +428,17 @@ class SiteArchiver
         try
         {
             auto u = URI(url);
+            string host = u.host.toLower();
+
+            if (!downloadSocial && !isLink && (host.canFind("twitter.com")
+                    || host.canFind("x.com") || host.canFind("t.co")
+                    || host.canFind("twimg.com") || host.canFind("twitter.jp")))
+                return false;
+
             string targetDomain = getApexDomain(u.host);
-
             if (isLink)
-            {
                 return targetDomain == this.domain;
-            }
-
-            return true; // Always download assets
+            return true;
         }
         catch (Exception)
         {
@@ -406,15 +451,12 @@ class SiteArchiver
         auto u = URI(url);
         string hostname = u.host;
         string path = u.path;
-
-        // Strip query and fragment for the filename
         foreach (sep; ['?', '#'])
         {
             auto idx = path.indexOf(sep);
             if (idx != -1)
                 path = path[0 .. idx];
         }
-
         if (path.startsWith("/"))
             path = path[1 .. $];
         if (path.empty)
@@ -422,11 +464,7 @@ class SiteArchiver
         else if (path.endsWith("/"))
             path ~= "index.html";
 
-        // Sanitize for Windows
-        import std.string : tr;
-
         path = path.tr(`<>:"|?*#`, `________`);
-
         if (path.canFind("index.html") || contentType.canFind("text/html")
                 || path.empty || (!path.canFind(".") && (contentType.empty
                     || contentType.canFind("text/html"))))
@@ -434,7 +472,6 @@ class SiteArchiver
             if (!path.canFind("."))
                 path ~= ".html";
         }
-
         if (getApexDomain(hostname) == this.domain)
             return path;
         return buildPath("external", hostname, path);
@@ -444,19 +481,14 @@ class SiteArchiver
     {
         try
         {
-            import std.path : relativePath, dirName, buildNormalizedPath, absolutePath;
-
-            // Use absolute paths to ensure relativePath works correctly on Windows
             auto absFrom = absolutePath(buildNormalizedPath(from));
             auto absTo = absolutePath(buildNormalizedPath(to));
             auto fromDir = dirName(absFrom);
-
             string rel = relativePath(absTo, fromDir);
             return rel.replace("\\", "/");
         }
         catch (Exception e)
         {
-            writeln("Relative path error: ", e.msg);
             return to;
         }
     }

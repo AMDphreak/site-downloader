@@ -1,17 +1,19 @@
+# Production/CI playbook: site URL set, output to build/site.
+# Run from repo root: antora antora-playbook.yml  (CI uses this)
 site:
   title: Site Downloader
   url: https://amdphreak.github.io/site-downloader/
   start_page: site-downloader::index.adoc
 content:
   sources:
-    - url: ..
+    - url: .
       branches: HEAD
       start_path: docs
 ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
     snapshot: true
-  supplemental_files: ../node_modules/antora-dark-theme/supplemental-ui
+  supplemental_files: docs/node_modules/antora-dark-theme/supplemental-ui
 output:
   dir: ./build/site
 antora:

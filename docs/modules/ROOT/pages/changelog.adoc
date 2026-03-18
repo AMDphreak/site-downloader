@@ -1,5 +1,13 @@
 = Changelog
 
+== 2026-03-17 - Fix Workflows and Dependencies
+Summary: Fixed GUI dependency and enabled GitHub Pages deployment.
+
+* Fixed `webview` dependency version.
+* Enabled GitHub Pages deployment from Actions.
+* Renamed `package.json` to `site-downloader`.
+* Link: xref:changelog-details/2026-03-17 - fix-workflows-and-dependencies.adoc[Full Details]
+
 == 2026-03-17 - First Installer and GitHub Workflow
 Summary: Added Inno Setup installer, GitHub release workflow, and WinGet integration.
 
@@ -7,3 +15,4 @@ Summary: Added Inno Setup installer, GitHub release workflow, and WinGet integra
 * Add `scripts/site-downloader.iss` for Inno Setup.
 * Add `.github/workflows/release.yml` for automated releases.
 * Link: xref:changelog-details/2026-03-17 - first-installer-and-workflow.adoc[Full Details]
+

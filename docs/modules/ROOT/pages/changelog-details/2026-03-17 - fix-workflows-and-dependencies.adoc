@@ -1,0 +1,11 @@
+= 2026-03-17 - Fix Workflows and Dependencies
+:revdate: 2026-03-17
+
+This release fixes the GitHub Actions workflows and a dependency issue in the GUI.
+
+== Changes
+
+* Fixed `webview` dependency version in `apps/gui/dub.json` to `~>0.1.1`.
+* Enabled GitHub Pages deployment from Actions in the repository settings (via `gh api`).
+* Updated project version to `1.0.1` across all components.
+* Renamed `package.json` name field to `site-downloader` for consistency.

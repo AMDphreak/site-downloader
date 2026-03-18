@@ -1,6 +1,6 @@
 {
-  "name": "site-archiver",
-  "version": "1.0.0",
+  "name": "site-downloader",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {

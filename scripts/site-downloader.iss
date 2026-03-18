@@ -1,7 +1,7 @@
 [Setup]
 AppId={{D3708D5B-4C04-4B7E-97B5-2C5C36EBC6A1}}
 AppName=Site Downloader
-AppVersion=1.0.0
+AppVersion=1.0.1
 AppPublisher=AMDphreak
 AppPublisherURL=https://github.com/AMDphreak/site-downloader
 AppSupportURL=https://github.com/AMDphreak/site-downloader/issues

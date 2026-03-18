@@ -1,6 +1,6 @@
 {
 	"name": "site-downloader-gui",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "GUI for site archiving",
 	"dependencies": {
 		"site-downloader-lib": {"path": "../../libs/archiver"},

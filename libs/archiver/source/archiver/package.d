@@ -36,12 +36,14 @@ class SiteArchiver
     string domain;
     bool[string] visitedUrls;
     bool downloadSocial = false;
+    string cookies;
 
-    this(string rootUrl, string outputDir, bool downloadSocial = false)
+    this(string rootUrl, string outputDir, bool downloadSocial = false, string cookies = "")
     {
         this.rootUrl = rootUrl;
         this.outputDir = outputDir;
         this.downloadSocial = downloadSocial;
+        this.cookies = cookies;
         auto u = URI(rootUrl);
         this.domain = getApexDomain(u.host);
     }
@@ -90,9 +92,12 @@ class SiteArchiver
             auto req = Request();
             req.verbosity = 0;
             req.sslSetVerifyPeer(false);
-            req.addHeaders([
+            string[string] headers = [
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-            ]);
+            ];
+            if (!cookies.empty)
+                headers["Cookie"] = cookies;
+            req.addHeaders(headers);
             auto rs = req.get(url);
 
             string finalUrl = rs.finalURI.uri;
@@ -340,7 +345,10 @@ class SiteArchiver
                 writeln("Archiving Asset: ", url);
                 auto client = HTTP();
                 client.handle.set(CurlOption.followlocation, 1);
+                client.handle.set(CurlOption.ssl_verifypeer, 0);
                 client.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+                if (!cookies.empty)
+                    client.handle.set(CurlOption.cookie, cookies);
                 std.net.curl.download(url.startsWith("//") ? "https:" ~ url : url, fullPath, client);
             }
             catch (Exception e)

@@ -6,6 +6,7 @@
 		"cachetools": "0.4.2",
 		"requests": "2.2.0",
 		"site-archiver-lib": {"path":"../../libs/archiver"},
+		"site-downloader-lib": {"path":"../../libs/archiver"},
 		"test_allocator": "0.3.4",
 		"unit-threaded": "2.2.3"
 	}

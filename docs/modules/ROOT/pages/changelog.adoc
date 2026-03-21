@@ -1,5 +1,13 @@
 = Changelog
 
+== 2026-03-21 - Single-page mode and CSS scope
+Summary: Added `--single-page` and `--css-scope` for faster, scoped archives.
+
+* Single-page mode downloads only the start URL as HTML plus assets; same-site links stay absolute.
+* Optional CSS selector replaces body content with one subtree for debugging.
+* Link rewriting when depth is exceeded now keeps absolute URLs.
+* Link: xref:changelog-details/2026-03-21 - single-page-and-css-scope.adoc[Full Details]
+
 == 2026-03-17 - Fix Workflows and Dependencies
 Summary: Fixed GUI dependency and enabled GitHub Pages deployment.
 

@@ -56,6 +56,14 @@ dub run -- --url https://example.com
 | If set, includes social media assets (Twitter/X, etc.).
 | `false`
 
+| `--single-page`, `-1`
+| Only download the start URL as HTML plus assets; same-site links remain absolute (no internal crawl).
+| `false`
+
+| `--css-scope`
+| After processing, replace `body` content with the first element matching this CSS selector (debugging).
+| (empty)
+
 | `--list-profiles`, `-l`
 | Lists available Chromium (Chrome/Edge) profiles on the system.
 | N/A

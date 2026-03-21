@@ -1,0 +1,15 @@
+= 2026-03-21 - Single-page mode and CSS scope
+
+== Summary
+
+The CLI can archive a single HTML page plus its discovered assets without following same-site links, which keeps runs fast when debugging one page (for example a footer widget).
+
+== Changes
+
+* Added `--single-page` (`-1`): same-site `a[href]` links are left as absolute URLs to the live site; only the start URL is crawled as HTML. External assets (CSS, JS, images, iframes, etc.) are still downloaded and rewritten as before.
+* Added `--css-scope`: optional CSS selector; after the DOM is processed, the `body` inner HTML is replaced with the `outerHTML` of the first matching element. Useful for shrinking a saved page to one region (for example `.wsite-footer`). Head scripts and styles are unchanged.
+* Fixed behavior when recursion depth is exhausted: same-site links now keep absolute URLs instead of pointing at non-downloaded local paths.
+
+== Notes
+
+* Scoping uses CSS selectors (supported by the HTML parser), not XPath. For most debugging tasks a selector such as `#footer` or `.wsite-elements.wsite-footer` is enough.

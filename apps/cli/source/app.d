@@ -3,8 +3,8 @@ import std.getopt;
 import std.array;
 import std.algorithm;
 import std.string;
-import archiver;
-import archiver.profiles;
+import downloader;
+import downloader.profiles;
 import browser_session;
 
 void main(string[] args)
@@ -18,16 +18,20 @@ void main(string[] args)
     bool useBrowserSession = false;
     string browserName = "auto";
     bool waitless = false;
+    bool singlePage = false;
+    string cssScope;
 
     auto helpInformation = getopt(args, "url|u", "The URL to archive", &url,
             "output|o", "Output directory (default: <domain>)", &output, "depth|d",
             "Max recursion depth (default: 2)", &depth, "list-profiles|l",
             "List available browser profiles", &listProfiles, "include-social|s",
-            "Include social media assets in archive (default: false)", &downloadSocial,
+            "Include social media assets in download (default: false)", &downloadSocial,
             "cookies|c", "Cookies to use for requests (e.g. 'session_id=123; other=456')", &cookies,
             "use-browser-session|b", "Automatically extract cookies from default browser", &useBrowserSession,
             "browser-name", "Specific browser to extract cookies from (chrome, edge, firefox, brave, auto)", &browserName,
-            "waitless|w", "Skip the prompt to select the browser window", &waitless);
+            "waitless|w", "Skip the prompt to select the browser window", &waitless,
+            "single-page|1", "Only download the start URL and its assets; same-site links stay absolute", &singlePage,
+            "css-scope", "CSS selector: replace body with the first matching subtree (debugging)", &cssScope);
 
     // Parse positional arguments if flags weren't used
     if (url.empty && args.length > 1) {
@@ -40,7 +44,7 @@ void main(string[] args)
     if (helpInformation.helpWanted)
     {
         writeln("Usage: site-downloader-cli [URL] [OUTPUT_DIR] [OPTIONS]\n");
-        defaultGetoptPrinter("Site Archiver CLI", helpInformation.options);
+        defaultGetoptPrinter("Site Downloader CLI", helpInformation.options);
         return;
     }
 
@@ -70,7 +74,7 @@ void main(string[] args)
             if (url.empty) {
                 writeln("Failed to extract URL from the browser. Please provide a URL manually.");
                 writeln("\nUsage: site-downloader-cli [URL] [OUTPUT_DIR] [OPTIONS]\n");
-                defaultGetoptPrinter("Site Archiver CLI", helpInformation.options);
+                defaultGetoptPrinter("Site Downloader CLI", helpInformation.options);
                 return;
             }
             writeln("Extracted URL: ", url);
@@ -78,8 +82,8 @@ void main(string[] args)
     }
 
     if (url.empty) {
-        writeln("Usage: site-downloader-cli [URL] [OUTPUT_DIR] [OPTIONS]\n");
-        defaultGetoptPrinter("Site Archiver CLI", helpInformation.options);
+        writeln("Usage: site-downloader [URL] [OUTPUT_DIR] [OPTIONS]\n");
+        defaultGetoptPrinter("Site Downloader CLI", helpInformation.options);
         return;
     }
 
@@ -97,7 +101,7 @@ void main(string[] args)
     // Default output to domain name if not provided
     if (output.empty) {
         output = domain;
-        if (output.empty) output = "archive_output";
+        if (output.empty) output = "site-downloader_output";
     }
 
     if (needsCookieExtraction) {
@@ -112,7 +116,11 @@ void main(string[] args)
     }
 
     writeln("Starting archive of ", url);
-    auto sa = new SiteArchiver(url, output, downloadSocial, cookies);
-    sa.archive(depth);
+    if (singlePage)
+        writeln("Single-page mode: not following same-site links.");
+    if (!cssScope.empty)
+        writeln("CSS scope: ", cssScope);
+    auto sa = new SiteDownloader(url, output, downloadSocial, cookies, singlePage, cssScope);
+    sa.download(depth);
     writeln("Finished archiving.");
 }

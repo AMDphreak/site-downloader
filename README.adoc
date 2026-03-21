@@ -40,6 +40,14 @@ cd apps/cli
 dub run -- --url https://example.com --depth 2
 ----
 
+To archive only one page and its assets (no following internal links), use `--single-page`:
+
+[source,powershell]
+----
+cd apps/cli
+dub run -- --url https://example.com/ --single-page --output ./single-page-mirror
+----
+
 === GUI
 
 [source,powershell]

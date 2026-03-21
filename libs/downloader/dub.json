@@ -1,0 +1,10 @@
+{
+	"name": "site-downloader-lib",
+	"version": "1.0.1",
+	"description": "Core logic for site archiving",
+	"dependencies": {
+		"requests": "~>2.2.0",
+		"arsd-official:dom": "~>12.1.0"
+	},
+	"targetType": "library"
+}

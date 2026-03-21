@@ -174,6 +174,9 @@ class SiteDownloader
                         }
                     }
 
+                    if (downloadSocial)
+                        prefetchTwitterFollowWidgets(document);
+
                     // Process inline styles
                     foreach (element; document.querySelectorAll("[style]"))
                     {
@@ -326,6 +329,93 @@ class SiteDownloader
         catch (Exception e)
         {
             writeln("Error downloading ", url, ": ", e.msg);
+        }
+    }
+
+    /**
+        When include-social is on, fetch X/Twitter widget JS and a static snapshot of the
+        follow-button document for archival (widgets still load the live iframe unless you
+        customize the page).
+    */
+    private void prefetchTwitterFollowWidgets(Document document)
+    {
+        bool[string] seen;
+        foreach (a; document.querySelectorAll("a.twitter-follow-button"))
+        {
+            if (!a.hasAttribute("href"))
+                continue;
+            string href = a.getAttribute("href");
+            string screen = extractTwitterScreenName(href);
+            if (screen.empty)
+                continue;
+            if (screen in seen)
+                continue;
+            seen[screen] = true;
+
+            downloadAsset("https://platform.twitter.com/widgets.js");
+            downloadTwitterFollowButtonSnapshot(screen, a);
+        }
+    }
+
+    private string extractTwitterScreenName(string href)
+    {
+        if (href.empty)
+            return "";
+        auto r = regex(r"(?:twitter\.com|x\.com)/([A-Za-z0-9_]+)", "i");
+        auto m = matchFirst(href, r);
+        if (m.empty)
+            return "";
+        return m[1].idup;
+    }
+
+    private string buildTwitterFollowButtonUrl(string screenName, Element a)
+    {
+        string size = "l";
+        if (a.hasAttribute("data-size"))
+        {
+            string ds = a.getAttribute("data-size").toLower();
+            if (ds == "small")
+                size = "s";
+            else if (ds == "medium")
+                size = "m";
+            else
+                size = "l";
+        }
+        string showCount = "false";
+        if (a.hasAttribute("data-show-count") && a.getAttribute("data-show-count") == "true")
+            showCount = "true";
+        string showScreen = "false";
+        if (a.hasAttribute("data-show-screen-name") && a.getAttribute("data-show-screen-name") == "true")
+            showScreen = "true";
+        return "https://platform.twitter.com/widgets/follow_button.html?screen_name=" ~ screenName
+            ~ "&show_count=" ~ showCount ~ "&show_screen_name=" ~ showScreen ~ "&size=" ~ size;
+    }
+
+    private void downloadTwitterFollowButtonSnapshot(string screenName, Element anchor)
+    {
+        string fullUrl = buildTwitterFollowButtonUrl(screenName, anchor);
+        if (fullUrl in visitedUrls)
+            return;
+        visitedUrls[fullUrl] = true;
+
+        string rel = buildPath("external", "platform.twitter.com", "widgets",
+                "follow-button-" ~ screenName ~ ".html");
+        string fullPath = buildPath(outputDir, rel);
+        mkdirRecurse(dirName(fullPath));
+        try
+        {
+            writeln("Downloading Twitter follow-button snapshot: ", fullUrl);
+            auto client = HTTP();
+            client.handle.set(CurlOption.followlocation, 1);
+            client.handle.set(CurlOption.ssl_verifypeer, 0);
+            client.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+            if (!cookies.empty)
+                client.handle.set(CurlOption.cookie, cookies);
+            std.net.curl.download(fullUrl, fullPath, client);
+        }
+        catch (Exception e)
+        {
+            writeln("Failed to download Twitter follow-button snapshot: ", e.msg);
         }
     }
 

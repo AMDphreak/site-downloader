@@ -53,7 +53,7 @@ dub run -- --url https://example.com
 | `2`
 
 | `--include-social`, `-s`
-| If set, includes social media assets (Twitter/X, etc.).
+| If set, downloads social CDNs (Twitter/X, etc.) when referenced as assets. For pages with `a.twitter-follow-button`, also fetches `platform.twitter.com/widgets.js` and a static HTML snapshot of the follow-button document into `external/platform.twitter.com/widgets/` for archival (the live widget iframe still uses X unless you customize further).
 | `false`
 
 | `--single-page`, `-1`

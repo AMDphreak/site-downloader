@@ -1,5 +1,10 @@
 = Changelog
 
+== 2026-03-21 - Twitter widget prefetch (include-social)
+Summary: With `--include-social`, download `widgets.js` and a static follow-button HTML snapshot for each Twitter follow button on a page.
+
+* Link: xref:changelog-details/2026-03-21 - twitter-widget-prefetch.adoc[Full Details]
+
 == 2026-03-21 - Single-page mode and CSS scope
 Summary: Added `--single-page` and `--css-scope` for faster, scoped archives.
 

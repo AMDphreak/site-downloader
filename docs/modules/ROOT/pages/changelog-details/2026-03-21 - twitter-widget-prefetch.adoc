@@ -1,0 +1,10 @@
+= 2026-03-21 - Twitter / X widget prefetch
+
+== Summary
+
+When `--include-social` is enabled, the crawler now detects `a.twitter-follow-button` in the DOM and downloads:
+
+* `https://platform.twitter.com/widgets.js` (rewritten like other external scripts when referenced from HTML elsewhere).
+* A static snapshot `external/platform.twitter.com/widgets/follow-button-<screen_name>.html` built from the anchor's `href` and `data-*` attributes (mirrors the public `follow_button.html` query API).
+
+These files support archival and optional offline loading of `widgets.js` from the mirror. The embedded iframe created at runtime may still point at `platform.twitter.com` unless you replace or rewrite it manually.

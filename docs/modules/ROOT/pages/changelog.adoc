@@ -1,5 +1,10 @@
 = Changelog
 
+== 2026-04-01 - Fix Dependabot security vulnerability in handlebars
+Summary: Explicitly added `handlebars@^4.7.9` to resolve CVE-2024-39331 and fix Dependabot update failures.
+
+* Link: xref:changelog-details/2026-04-01 - fix-dependabot-handlebars-vulnerability.adoc[Full Details]
+
 == 2026-03-21 - Fix GUI Logging and Settings Persistence
 Summary: Fixed silent Javascript SyntaxErrors and bypass `localStorage` SecurityErrors by implementing D-based settings persistence and secure JSON log serialization.
 

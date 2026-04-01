@@ -14,6 +14,7 @@
     "@antora/cli": "^3.1.14",
     "@antora/collector-extension": "^1.0.2",
     "@antora/site-generator": "^3.1.14",
-    "antora-dark-theme": "^0.1.3"
+    "antora-dark-theme": "^0.1.3",
+    "handlebars": "^4.7.9"
   }
 }

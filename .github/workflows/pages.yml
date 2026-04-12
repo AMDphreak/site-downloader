@@ -42,9 +42,9 @@ jobs:
         id: antora
         uses: antora-supplemental/antora-build-action@v2
         with:
-          working_directory: .
-          playbook: antora-playbook.yml
-          output_dir: build/site
+          working_directory: docs
+          playbook: ../antora-playbook.yml
+          output_dir: ../build/site
           install_dependencies: false
           setup_pnpm: false
           setup_node: false

@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@chenglou/pretext':
-        specifier: ^0.0.4
-        version: 0.0.4
+        specifier: ^0.0.5
+        version: 0.0.5
     devDependencies:
       handlebars:
         specifier: ^4.7.9
@@ -122,8 +122,8 @@ packages:
     resolution: {integrity: sha512-oozXk7ZO1RAd/KLFLkKOhqTcG4GO3CV44WwOFg2gMcCsqCUTarvMT7xERIoWW2WurKbB0/ce+98r01p8xPOlBw==}
     engines: {node: '>=8.11', npm: '>=5.0.0', yarn: '>=1.1.0'}
 
-  '@chenglou/pretext@0.0.4':
-    resolution: {integrity: sha512-FnPAFMid1/p1j2V2gRPUVBarGUIb2PhkkC9YNnTOfPtTDgHKh8siO8PP9pCxpFfYlcodWPJpE1UbSHGQqt8pQQ==}
+  '@chenglou/pretext@0.0.5':
+    resolution: {integrity: sha512-A8GZN10REdFGsyuiUgLV8jjPDDFMg5GmgxGWV0I3igxBOnzj+jgz2VMmVD7g+SFyoctfeqHFxbNatKSzVRWtRg==}
 
   '@iarna/toml@2.2.5':
     resolution: {integrity: sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==}
@@ -838,7 +838,7 @@ snapshots:
       asciidoctor-opal-runtime: 0.3.3
       unxhr: 1.0.1
 
-  '@chenglou/pretext@0.0.4': {}
+  '@chenglou/pretext@0.0.5': {}
 
   '@iarna/toml@2.2.5': {}
 

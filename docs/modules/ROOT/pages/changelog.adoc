@@ -1,5 +1,8 @@
 = Changelog
 
+== 2026-10-06 - Rename antora-dark-theme to antora-dark-mode
+Summary: Migrated the Antora dark-mode overlay from the retired `antora-dark-theme` package to `antora-dark-mode` `^1.4.5`. Default UI stays in `ui.bundle`; `supplemental_files` now points at `node_modules/antora-dark-mode/supplemental-ui`.
+
 == 2026-04-01 - Fix Dependabot security vulnerability in handlebars
 Summary: Explicitly added `handlebars@^4.7.9` to resolve CVE-2024-39331 and fix Dependabot update failures.
 

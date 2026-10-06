@@ -12,7 +12,7 @@ ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
     snapshot: true
-  supplemental_files: docs/node_modules/antora-dark-theme/supplemental-ui
+  supplemental_files: docs/node_modules/antora-dark-mode/supplemental-ui
 output:
   dir: ./build/site-offline
 antora:

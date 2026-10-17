@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  handlebars: ^4.7.9
+  handlebars: ^4.7.10
 
 importers:
 
@@ -16,8 +16,8 @@ importers:
         version: 0.0.4
     devDependencies:
       handlebars:
-        specifier: ^4.7.9
-        version: 4.7.9
+        specifier: ^4.7.10
+        version: 4.7.10
 
   apps/extension: {}
 
@@ -36,8 +36,8 @@ importers:
         specifier: ^1.4.5
         version: 1.4.5
       handlebars:
-        specifier: ^4.7.9
-        version: 4.7.9
+        specifier: ^4.7.10
+        version: 4.7.10
 
 packages:
 
@@ -324,8 +324,8 @@ packages:
     resolution: {integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg==}
     engines: {node: '>= 0.4'}
 
-  handlebars@4.7.9:
-    resolution: {integrity: sha512-4E71E0rpOaQuJR2A3xDZ+GM1HyWYv1clR58tC8emQNeQe3RH7MAzSbat+V0wG78LQBo6m6bzSG/L4pBuCsgnUQ==}
+  handlebars@4.7.10:
+    resolution: {integrity: sha512-P5VJMVM7qgBn6vjXMw8WG9uVI+ncf2pi72j4de4yz5ZULLj2RGqLYaKOYGsgyrViQ0tePOVlN1tDCCXXtFqXKg==}
     engines: {node: '>=0.4.7'}
     hasBin: true
 
@@ -731,7 +731,7 @@ snapshots:
   '@antora/page-composer@3.1.14':
     dependencies:
       '@antora/logger': 3.1.14
-      handlebars: 4.7.9
+      handlebars: 4.7.10
       require-from-string: 2.0.2
 
   '@antora/playbook-builder@3.1.14':
@@ -997,7 +997,7 @@ snapshots:
 
   gopd@1.2.0: {}
 
-  handlebars@4.7.9:
+  handlebars@4.7.10:
     dependencies:
       minimist: 1.2.8
       neo-async: 2.6.2
